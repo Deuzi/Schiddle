@@ -113,7 +113,7 @@ export default function AppPage() {
   const isProcessing = status === "masking" || status === "loading";
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-white via-schiddle-50/40 to-white">
+    <main className="min-h-screen bg-white bg-gradient-to-b from-white via-schiddle-50 to-white">
       {/* Top nav */}
       <header className="border-b border-schiddle-100 bg-white/70 backdrop-blur-md sticky top-0 z-10">
         <div className="mx-auto max-w-6xl px-6 py-3 flex items-center justify-between">
