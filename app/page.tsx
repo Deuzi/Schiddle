@@ -152,10 +152,14 @@ export default function LandingPage() {
             />
           </span>
 
-          <p className="text-xs text-schiddle-400/60 text-center">
-            No raw personal data ever reaches our AI model. See{" "}
-            <span className="text-schiddle-300">SECURITY.md</span> for the
-            full write-up.
+         <p className="text-xs text-schiddle-400/60 text-center flex items-center gap-3">
+            <Link href="/privacy" className="text-schiddle-300 hover:text-schiddle-200 underline">
+              Privacy Policy
+            </Link>
+            <span>·</span>
+            <Link href="/terms" className="text-schiddle-300 hover:text-schiddle-200 underline">
+              Terms of Service
+            </Link>
           </p>
 
           <p className="text-xs text-schiddle-500/50">
