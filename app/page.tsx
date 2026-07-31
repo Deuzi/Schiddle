@@ -32,7 +32,7 @@ export default function LandingPage() {
       {/* Nav */}
       <header className="absolute top-0 left-0 right-0 z-20">
         <div className="mx-auto max-w-6xl px-6 py-6 flex items-center justify-between">
-          <span className="inline-flex rounded-xl  px-2 py-1">
+          <span className="inline-flex rounded-xl px-2 py-1">
             <Image
               src="/images/logo.png"
               alt="Schiddle"
