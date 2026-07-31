@@ -19,48 +19,52 @@ interface Category {
 // Category patterns, ordered so more specific matches win before generic
 // "capitalized word" catch-alls run.
 const CATEGORY_PATTERNS: Category[] = [
-  // Schools / educational institutions
+  // Schools / educational institutions — keyword is case-insensitive,
+  // and the name part no longer requires a capital letter to match.
   {
     key: "LOCATION_EDUCATIONAL",
     regex:
-      /\b([A-Z][a-zA-Z'’-]*(?:\s+[A-Z][a-zA-Z'’-]*){0,3}\s+(?:High School|Middle School|Elementary|Academy|University|College|Prep|Institute))\b/g,
+      /\b([A-Za-z][a-zA-Z'’-]*(?:\s+[A-Za-z][a-zA-Z'’-]*){0,3}\s+(?:High School|Middle School|Elementary|Academy|University|College|Prep|Institute))\b/gi,
   },
-  // Cities / geographic places (word(s) followed by common state abbreviations,
-  // or a small list of directionals + "City"/"County")
+  // Cities / geographic places (word(s) followed by common state abbreviations)
   {
     key: "LOCATION_GEOGRAPHIC",
     regex:
-      /\b([A-Z][a-zA-Z]+(?:\s[A-Z][a-zA-Z]+)?,\s?[A-Z]{2})\b/g,
+      /\b([A-Za-z][a-zA-Z]+(?:\s[A-Za-z]+)?,\s?[A-Za-z]{2})\b/gi,
   },
-  // Sports / athletic activities
+  // Sports / athletic activities (already case-insensitive)
   {
     key: "ACTIVITY_ATHLETIC",
     regex:
       /\b(Varsity\s+)?(Tennis|Basketball|Soccer|Football|Baseball|Softball|Track(?:\s*&\s*Field)?|Cross\s*Country|Swim(?:ming)?|Volleyball|Lacrosse|Wrestling|Golf|Hockey|Rowing|Crew|Gymnastics|Cheer(?:leading)?)\b/gi,
   },
-  // Academic subjects / exams
+  // Academic subjects / exams — now case-insensitive, "AP" no longer
+  // requires the following word to be capitalized.
   {
     key: "ACTIVITY_ACADEMIC",
     regex:
-      /\b(AP\s+[A-Z][a-zA-Z]+(?:\s[A-Z][a-zA-Z]+)?|Calculus|Chemistry|Biology|Physics|Algebra|Geometry|English|History|SAT|ACT|Finals?|Midterms?)\b/g,
+      /\b(AP\s+[A-Za-z]+(?:\s[A-Za-z]+)?|Calculus|Chemistry|Biology|Physics|Algebra|Geometry|English|History|SAT|ACT|Finals?|Midterms?)\b/gi,
   },
-  // Generic person names: "Coach X", "Coach Firstname Lastname", or two
-  // consecutive capitalized words not already caught above (heuristic).
+  // Generic person names: "Coach X" etc. — keyword case-insensitive,
+  // name part allows lowercase.
   {
     key: "PERSON_NAME",
     regex:
-      /\b(Coach\s+[A-Z][a-zA-Z'’-]+(?:\s+[A-Z][a-zA-Z'’-]+)?|Dr\.\s+[A-Z][a-zA-Z'’-]+|Mr\.\s+[A-Z][a-zA-Z'’-]+|Mrs\.\s+[A-Z][a-zA-Z'’-]+|Ms\.\s+[A-Z][a-zA-Z'’-]+)\b/g,
+      /\b(Coach\s+[A-Za-z][a-zA-Z'’-]+(?:\s+[A-Za-z][a-zA-Z'’-]+)?|Dr\.\s+[A-Za-z][a-zA-Z'’-]+|Mr\.\s+[A-Za-z][a-zA-Z'’-]+|Mrs\.\s+[A-Za-z][a-zA-Z'’-]+|Ms\.\s+[A-Za-z][a-zA-Z'’-]+)\b/gi,
   },
-  // Fallback: standalone city/place names that are simple capitalized
-  // words known to be common city names (kept intentionally small —
-  // avoids over-masking every capitalized word, e.g. "Monday").
+  // Fallback: known city names, now case-insensitive.
   {
     key: "LOCATION_GEOGRAPHIC",
     regex:
-      /\b(San Diego|San Francisco|Los Angeles|New York|Chicago|Houston|Phoenix|Philadelphia|San Antonio|Dallas|Austin|Seattle|Denver|Boston|Miami|Atlanta|Portland|Sacramento|San Jose)\b/g,
+      /\b(San Diego|San Francisco|Los Angeles|New York|Chicago|Houston|Phoenix|Philadelphia|San Antonio|Dallas|Austin|Seattle|Denver|Boston|Miami|Atlanta|Portland|Sacramento|San Jose)\b/gi,
+  },
+
+  {
+    key: "LOCATION_GEOGRAPHIC",
+    regex:
+      /\b(?:in|at)\s+([A-Za-z][a-zA-Z'’-]+(?:\s[A-Za-z][a-zA-Z'’-]+){0,2})(?=[\s.,!?]|$)/gi,
   },
 ];
-
 /**
  * Scans raw text and replaces identifiable substrings with stable tokens.
  * Returns the masked text plus a reverse map so the tokens can later be
@@ -75,10 +79,8 @@ export function maskSensitiveData(rawText: string): {
   const counters: { [key: string]: number } = {};
 
   for (const category of CATEGORY_PATTERNS) {
-    // Reset lastIndex since these regexes are reused across calls.
     category.regex.lastIndex = 0;
     maskedText = maskedText.replace(category.regex, (match) => {
-      // Avoid re-masking something that's already a token (defensive).
       if (/^\[[A-Z_]+_\d+\]$/.test(match)) return match;
 
       counters[category.key] = (counters[category.key] || 0) + 1;
