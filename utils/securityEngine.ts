@@ -19,12 +19,20 @@ interface Category {
 // Category patterns, ordered so more specific matches win before generic
 // "capitalized word" catch-alls run.
 const CATEGORY_PATTERNS: Category[] = [
-  // Schools / educational institutions — keyword is case-insensitive,
-  // and the name part no longer requires a capital letter to match.
+  // Academic subjects / exams — moved BEFORE the school pattern so
+  // "ap calc exam prep" gets tagged correctly before the school-name
+  // pattern ever gets a chance to misread "prep" as a school suffix.
+  {
+    key: "ACTIVITY_ACADEMIC",
+    regex:
+      /\b(AP\s+[A-Za-z]+(?:\s[A-Za-z]+)?|Calculus|Chemistry|Biology|Physics|Algebra|Geometry|English|History|SAT|ACT|Finals?|Midterms?|exam\s+prep|test\s+prep|study\s+session)\b/gi,
+  },
+  // Schools / educational institutions — "Prep" now requires "Prep School"
+  // explicitly, so it no longer collides with "exam prep" / "test prep".
   {
     key: "LOCATION_EDUCATIONAL",
     regex:
-      /\b([A-Za-z][a-zA-Z'’-]*(?:\s+[A-Za-z][a-zA-Z'’-]*){0,3}\s+(?:High School|Middle School|Elementary|Academy|University|College|Prep|Institute))\b/gi,
+      /\b([A-Za-z][a-zA-Z'’-]*(?:\s+[A-Za-z][a-zA-Z'’-]*){0,3}\s+(?:High School|Middle School|Elementary|Academy|University|College|Prep School|Institute))\b/gi,
   },
   // Cities / geographic places (word(s) followed by common state abbreviations)
   {
@@ -32,37 +40,26 @@ const CATEGORY_PATTERNS: Category[] = [
     regex:
       /\b([A-Za-z][a-zA-Z]+(?:\s[A-Za-z]+)?,\s?[A-Za-z]{2})\b/gi,
   },
-  // Sports / athletic activities (already case-insensitive)
+  // Sports / athletic activities
   {
     key: "ACTIVITY_ATHLETIC",
     regex:
       /\b(Varsity\s+)?(Tennis|Basketball|Soccer|Football|Baseball|Softball|Track(?:\s*&\s*Field)?|Cross\s*Country|Swim(?:ming)?|Volleyball|Lacrosse|Wrestling|Golf|Hockey|Rowing|Crew|Gymnastics|Cheer(?:leading)?)\b/gi,
   },
-  // Academic subjects / exams — now case-insensitive, "AP" no longer
-  // requires the following word to be capitalized.
-  {
-    key: "ACTIVITY_ACADEMIC",
-    regex:
-      /\b(AP\s+[A-Za-z]+(?:\s[A-Za-z]+)?|Calculus|Chemistry|Biology|Physics|Algebra|Geometry|English|History|SAT|ACT|Finals?|Midterms?)\b/gi,
-  },
-  // Generic person names: "Coach X" etc. — keyword case-insensitive,
-  // name part allows lowercase.
+  // Generic person names — captures exactly ONE word after the keyword,
+  // not an optional second word, so it can no longer swallow the next
+  // unrelated word (like a day name) when there's no capital letter to
+  // signal where the name ends.
   {
     key: "PERSON_NAME",
     regex:
-      /\b(Coach\s+[A-Za-z][a-zA-Z'’-]+(?:\s+[A-Za-z][a-zA-Z'’-]+)?|Dr\.\s+[A-Za-z][a-zA-Z'’-]+|Mr\.\s+[A-Za-z][a-zA-Z'’-]+|Mrs\.\s+[A-Za-z][a-zA-Z'’-]+|Ms\.\s+[A-Za-z][a-zA-Z'’-]+)\b/gi,
+      /\b(Coach\s+[A-Za-z][a-zA-Z'’-]+|Dr\.\s+[A-Za-z][a-zA-Z'’-]+|Mr\.\s+[A-Za-z][a-zA-Z'’-]+|Mrs\.\s+[A-Za-z][a-zA-Z'’-]+|Ms\.\s+[A-Za-z][a-zA-Z'’-]+)\b/gi,
   },
-  // Fallback: known city names, now case-insensitive.
+  // Fallback: known city names.
   {
     key: "LOCATION_GEOGRAPHIC",
     regex:
       /\b(San Diego|San Francisco|Los Angeles|New York|Chicago|Houston|Phoenix|Philadelphia|San Antonio|Dallas|Austin|Seattle|Denver|Boston|Miami|Atlanta|Portland|Sacramento|San Jose)\b/gi,
-  },
-
-  {
-    key: "LOCATION_GEOGRAPHIC",
-    regex:
-      /\b(?:in|at)\s+([A-Za-z][a-zA-Z'’-]+(?:\s[A-Za-z][a-zA-Z'’-]+){0,2})(?=[\s.,!?]|$)/gi,
   },
 ];
 /**
