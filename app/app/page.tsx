@@ -58,13 +58,13 @@ export default function AppPage() {
         throw new Error(data?.error || "Failed to optimize schedule.");
       }
 
-      const unmaskedEvents = unmaskObject<
-        (ScheduleEvent & { dayOfWeek?: string })[]
+   const unmaskedEvents = unmaskObject <
+        (ScheduleEvent & { dayOfWeek?: string; weekOffset?: number })[]
       >(data.events, reverseMap as MaskMap);
 
       const datedEvents: ScheduleEvent[] = unmaskedEvents.map(
-        ({ dayOfWeek, ...evt }) => {
-          const resolved = resolveDayOfWeek(dayOfWeek);
+        ({ dayOfWeek, weekOffset, ...evt }) => {
+          const resolved = resolveDayOfWeek(dayOfWeek, weekOffset);
           return { ...evt, ...resolved };
         }
       );

@@ -1,10 +1,9 @@
 // utils/dateResolver.ts
 //
-// Converts the AI's "dayOfWeek" field (e.g. "Monday") into an actual
-// concrete calendar date, computed in code rather than trusted from the
-// model's own date arithmetic. This is what makes a 5-day schedule
-// actually spread across 5 different days instead of collapsing onto
-// "today" for every event.
+// Converts the AI's "dayOfWeek" field (e.g. "Monday") plus an optional
+// "weekOffset" (e.g. 1 for "next week Saturday") into an actual concrete
+// calendar date, computed in code rather than trusted from the model's
+// own date arithmetic.
 
 const WEEKDAYS = [
   "sunday",
@@ -23,20 +22,20 @@ export interface ResolvedDate {
 }
 
 /**
- * Given a weekday name (or "unspecified"), returns the next calendar
- * date matching that weekday, starting from `referenceDate` (inclusive —
- * if today IS that weekday, today is returned, not next week).
- * "unspecified" (or any unrecognized value) resolves to referenceDate itself.
+ * Given a weekday name (or "unspecified") and an optional week offset,
+ * returns the resolved calendar date. weekOffset 0 = the nearest upcoming
+ * occurrence (today counts if it matches); weekOffset 1 = the occurrence
+ * after that (i.e. "next week Saturday" explicitly skips the closest one).
  */
 export function resolveDayOfWeek(
   dayOfWeek: string | undefined | null,
+  weekOffset: number = 0,
   referenceDate: Date = new Date()
 ): ResolvedDate {
   const normalized = (dayOfWeek || "").trim().toLowerCase();
   const targetIndex = WEEKDAYS.indexOf(normalized);
 
   if (targetIndex === -1) {
-    // "unspecified" or unrecognized -> default to reference date (today).
     return {
       year: referenceDate.getFullYear(),
       month: referenceDate.getMonth() + 1,
@@ -45,7 +44,9 @@ export function resolveDayOfWeek(
   }
 
   const refIndex = referenceDate.getDay();
-  const daysToAdd = (targetIndex - refIndex + 7) % 7; // 0..6, today counts as a match
+  const baseDaysToAdd = (targetIndex - refIndex + 7) % 7; // 0..6, nearest occurrence
+  const safeOffset = Number.isFinite(weekOffset) && weekOffset > 0 ? Math.floor(weekOffset) : 0;
+  const daysToAdd = baseDaysToAdd + safeOffset * 7;
 
   const resolved = new Date(referenceDate);
   resolved.setDate(referenceDate.getDate() + daysToAdd);
