@@ -33,6 +33,7 @@ CRITICAL INSTRUCTIONS:
    - "night" -> 8:00 PM (20:00)
    If an event is described as happening after another event (e.g. "after tennis practice"), its start time should be later than that other event's end time, not just the raw time-of-day default.
 
+9. Each event object must describe exactly ONE distinct activity from the input, in isolation. Never blend, reference, or borrow words from a different activity's title or notes — e.g. if the input separately mentions "AP Calc exam prep" and "visiting my brother," the AP Calc event's title and notes must be about AP Calc only, and must not mention "visit," "brother," or any other unrelated event, even if they're scheduled close together in time.
 Expected JSON structure (array of objects):
 [
   {
